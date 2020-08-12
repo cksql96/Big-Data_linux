@@ -1,0 +1,119 @@
+sps					
+ips					
+mr					
+tr				기본 네가지를 해줘야한다.					
+
+loc				local로 들간다
+hadoop namenode -format		구성준비
+start-all.sh			구성시작
+jps				확인, namenode3개, snamenode4개 나와야 함.
+--------------------------------------------------------------------------
+하둡 구성완료////
+wordcount 예시
+--------------------------------------------------------------------------
+cd hadoop
+
+ls
+
+hadoop fs -mkdir in1 				in1이라는 디렉토리를 만든다.
+hadoop fs -lsr /				들어간지 체크해준다.
+
+hadoop fs -put NOTICE.txt /user/root/in1	NOTICE.txt를 /user/root/in1에 넣어준다.
+
+hadoop jar hadoop-examples-1.0.4.jar wordcount /user/root/in1/NOTICE.txt out1
+(하둡에 jar를 쓰는데, hadoop-example를 활용해, wordcount를 사용하는데 위치는 저곳이고,
+넣는곳은 out1이라는곳에 넣는다.)
+
+
+hadoop fs -lsr /				이걸하면 다 보인다.
+
+
+hadoop fs -cat /user/root/out1/part-r-00000>>/mnt/hgfs/Temp/0806.txt
+(하둡의 filesystem를 쓰는데, cat을 사용하여읽는데 그것은, /out1/part-r-00000이라는
+위치의 파일을 읽어들이며, >>(복사) 하여, Temp위치에 0806.txt파일을 만든다.)
+
+
+hadoop fs -rmr /user/root			/user/root를 지운다.
+--------------------------------------------------------------------------
+WordCount 끝 //////
+hive 설치
+--------------------------------------------------------------------------
+sf					Temp파일로 들간다.
+tar xzvfp hive-0.9.0.tar.gz		하이브 압축파일을 푼다.
+mv hive-0.9.0 /usr/local		local로 보낸다.
+loc					local로 간다.
+ls					리스트를 본다.
+ln -s hive-0.9.0 hive			hive-0.9.0을 hive로 심볼릭해준다.
+
+vi /etc/profile				환경작업
+
+export JAVA_HOME=/usr/local/java	자바를 연결시켜준다.
+export HADOOP_HOME=/usr/local/hadoop	하둡을 연결시켜준다.
+export HIVE_HOME=/usr/local/hive	하이브를 연결시켜준다.
+
+export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
+(자바와 하둡과 하이브를 제대로 실행되게 연결해준다.)
+
+끝내고,
+source /etc/profile
+
+sf					Temp파일로 간다.
+hive					Hive실행이 되는지 보여준다.
+show tables;				실행되는지 확인
+quit;					빠져나오기
+
+loc					local로 간다.
+cd hive					hive 파일 안으로 간다.
+ls					리스트를 보여준다.
+cd conf					conf파일 안으로 간다.
+ls					리스트를 보여준다.
+
+mv xxx yyy				xxx파일을 yyy이름으로 바꿔준다.
+mv xxx yyy				xxx파일을 yyy이름으로 바꿔준다.
+					파일이름에서 template를 지워준다.
+
+vi hive-exec-log4j.properties		저 파일 안으로 들간다
+/jvm					/xxx는 xxx단어를 찾아준다.
+
+metrics 앞에 log. 쓰고, jvm.을 지운다.
+
+vi hive-log4j.properties
+
+이 작업을 하면 다시 
+sf					temp로 들어간다.(어디서든 hive구동가능하긴하다)
+hive					오류가 안뜬다.
+show tables;				OK뜨는거 확인
+
+-------------------------------------------------------
+하이브 설치 끝//////
+하이브 구동후(sf(Temp) 에서 hive치면 하이브 구동됌)
+-------------------------------------------------------
+테이블 만들기(SQL이랑 같음)
+CREATE TABLE airdelay(
+Year    INT, 
+Month    INT)
+Partitioned by (DelayYear INT)
+ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY ','
+    LINES TERMINATED BY '\n'
+    STORED AS TEXTFILE; 
+
+
+load data local inpath '1999.csv'	1999.csv라는 파일의 데이터를 불러온다.
+overwrite into table airdelay		그리고 덮어쓴다. 어디에? airdelay에
+partition(delayyear=1999);		분류는? delayyear=1999로.
+
+
+-------------------------------------------------------
+하이브에
+보너스 팁
+-------------------------------------------------------
+하이브를 꺼야되고, 테이블이 있는곳에서 해야된다.
+(나 같은 경우는 /Temp/hadoop_hive 안에 있다.
+
+sf
+
+hive -e 'select year, month from airdelay group by flightnum'>/mnt/hgfs/Temp/test_c.tsv
+(하이브에서 -e라는 것을 쓰는데 어떤거냐 'select~~~'라는 명령어를 >(어디로?)
+/mnt/hgfs/~~~라는 곳에 만들것이다.)
+(한줄에 다 쳐야함. 하이브 가동을 안해도 쓸수는있다. 하이브가 깔려있다면.)
