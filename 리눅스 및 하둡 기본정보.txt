@@ -1,0 +1,38 @@
+!vi - 가장 최근에 실행한 vi 로 들어간다.
+
+vi ~/.bashrc       	간단한 명령어수정
+source ~/.bashrc	적용
+
+alias xxx='ifconfig eth0 111.111.111.111 up'
+방금친 ifconfig는 ip를 바꿔준다.
+
+
+두개의 접속 연결하기
+
+cd (root, 가장 mother되는 위치로 간다)
+
+ssh-keygen -t rsa 엔터, 엔터, 엔터, 엔터 네모난 화면 나올때까지
+다음에는 
+cd .ssh
+ls
+(id_rsa, id_rsa.pub 가 나오는거 확인)
+
+cat id_rsa.pub 하면 비밀번호가 나온다.
+
+두개다 해주고
+그다음 
+cat id_rsa.pub>>authorized_keys 
+
+ls
+(authorized_keys 가 나오는거 확인.)
+
+ssh root@snamenode cat ~/.ssh/id_rsa.pub>>~/.ssh/authorized_keys
+
+scp -rp authorized_keys root@snamenode:~/.ssh/authorized-keys
+
+mkdir -p /home/hadoop/hdfs/data     (폴더 만들기)
+mkdir -p /home/hadoop/hdfs/temp
+mkdir -p /home/hadoop/hdfs/name
+
+
+(싹다 namenode꺼임)
